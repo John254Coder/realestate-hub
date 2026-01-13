@@ -1,103 +1,308 @@
+"use client";
+
 import Image from "next/image";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { properties } from "@/data/properties";
+import { testimonials } from "@/data/testimonials";
+import HomeFAQPreview from "./components/HomeFAQPreview";
+import FeaturedPropertiesCarousel from "./components/FeaturedPropertiesCarousel";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+
+// 🔹 Animation Variant
+const fadeUp = { hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0 } };
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const featured = properties.filter((p) => p.featured);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  // For testimonials carousel
+  const [emblaRef] = useEmblaCarousel(
+    { loop: true, align: "center", skipSnaps: false },
+    [Autoplay({ delay: 4000 })]
+  );
+
+  // 🔍 Search state
+  const [location, setLocation] = useState("");
+  const [type, setType] = useState("");
+  const [price, setPrice] = useState("");
+  const router = useRouter();
+
+  // Handle search button click
+    const handleSearch = () => {
+      const params = new URLSearchParams();
+
+      if (location) params.append("location", location);
+      if (type) params.append("type", type);
+      if (price) params.append("price", price);
+
+      // Redirect with applied filters
+      router.push(`/listing?${params.toString()}`);
+    };
+
+
+  return (
+    <main className="flex flex-col overflow-x-hidden">
+      {/* Hero Section */}
+      <section className="relative flex items-center justify-center h-screen overflow-hidden text-center text-white">
+  {/* Background image with overlay */}
+  <motion.div
+    className="absolute inset-0"
+    initial={{ scale: 1.2 }}
+    animate={{ scale: 1 }}
+    transition={{ duration: 1.5, ease: "easeOut" }}
+  >
+    <Image
+      src="/hero-bg.jpg"
+      alt="Luxury property"
+      fill
+      priority
+      className="object-cover"
+    />
+    <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80" />
+  </motion.div>
+
+  {/* Content */}
+  <motion.div
+    className="relative z-10 max-w-6xl px-4 mx-auto sm:px-6 md:px-20"
+    initial="hidden"
+    animate="visible"
+    variants={fadeUp}
+    transition={{ duration: 0.8 }}
+  >
+    <h1 className="mb-4 text-3xl font-extrabold leading-tight text-transparent sm:text-4xl md:text-6xl bg-clip-text bg-gradient-to-r from-accent to-secondary">
+      Find Your Dream Home
+    </h1>
+    <p className="mb-6 text-sm sm:text-lg md:text-xl text-neutral-200">
+      Premium properties for sale & rent
+    </p>
+
+    {/* 🔍 Search Card */}
+    <div className="p-4 mb-6 shadow-lg bg-white/90 rounded-xl backdrop-blur-sm">
+      <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+        <input
+          type="text"
+          placeholder="Location (e.g., Nairobi)"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          className="w-full px-3 py-2 text-sm text-black rounded-lg sm:w-1/3 focus:outline-none focus:ring-2 focus:ring-secondary"
+        />
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="w-full px-3 py-2 text-sm text-black rounded-lg sm:w-1/4 focus:outline-none focus:ring-2 focus:ring-secondary"
+        >
+          <option value="">Property Type</option>
+          <option value="apartment">Apartment</option>
+          <option value="house">House</option>
+          <option value="villa">Villa</option>
+        </select>
+        <select
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          className="w-full px-3 py-2 text-sm text-black rounded-lg sm:w-1/4 focus:outline-none focus:ring-2 focus:ring-secondary"
+        >
+          <option value="">Price Range</option>
+          <option value="100000">Below $100k</option>
+          <option value="500000">$100k - $500k</option>
+          <option value="500001">$500k+</option>
+        </select>
+        <button
+          onClick={handleSearch}
+          className="w-full px-5 py-2 text-sm font-semibold text-white transition rounded-lg sm:w-auto bg-secondary hover:bg-secondary/90"
+        >
+          Search
+        </button>
+      </div>
+    </div>
+
+    {/* CTA Buttons */}
+    <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+      <Link
+        href="/listing?filter=all"
+        className="w-full sm:w-auto px-6 py-2.5 text-sm font-semibold text-white transition rounded-full shadow-md bg-secondary hover:bg-secondary/90 hover:scale-105"
+      >
+        View Listings
+      </Link>
+      <Link
+        href="/contact"
+        className="w-full sm:w-auto px-6 py-2.5 text-sm font-semibold transition rounded-full shadow-md bg-accent text-primary hover:bg-accent/90 hover:scale-105"
+      >
+        Contact Us
+      </Link>
+    </div>
+  </motion.div>
+</section>
+
+
+      {/* Featured Properties */}
+      <section className="relative z-20 px-4 py-20 shadow-lg sm:px-6 md:px-20 bg-neutral-100 rounded-t-3xl">
+        <FeaturedPropertiesCarousel featuredProperties={featured} />
+      </section>
+
+    
+
+      {/* About Section */}
+      <section className="px-4 py-20 bg-white sm:px-6 md:px-20">
+        <div className="grid items-center max-w-6xl gap-12 mx-auto md:grid-cols-2">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="mb-6 text-2xl font-bold sm:text-3xl md:text-3xl text-primary">
+              About Us
+            </h2>
+            <p className="mb-6 text-sm leading-relaxed sm:text-base md:text-lg text-text-muted">
+              We are a trusted real estate agency dedicated to helping you buy,
+              sell, or rent premium properties. Our team ensures a seamless
+              experience with transparency and professionalism.
+            </p>
+            <Link
+              href="/about"
+              className="inline-block px-6 py-3 font-semibold text-white rounded-lg bg-secondary hover:bg-secondary/90"
+            >
+              Learn More
+            </Link>
+          </motion.div>
+
+          <motion.div
+            className="relative h-56 overflow-hidden shadow-md sm:h-64 md:h-72 rounded-2xl"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
           >
             <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+              src="/about-home.jpg"
+              alt="About us real estate"
+              fill
+              className="object-cover"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          </motion.div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="px-4 py-24 text-center sm:px-6 md:px-20 bg-neutral-100">
+        <motion.h2
+          className="mb-16 text-2xl font-bold sm:text-3xl md:text-3xl text-primary"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          What Our Clients Say
+        </motion.h2>
+
+        <div className="overflow-hidden" ref={emblaRef}>
+          <div className="box-border flex gap-4 pb-4 sm:gap-6 sm:pb-6">
+            {testimonials.map((t, i) => (
+              <motion.div
+                key={t.id}
+                className="flex-shrink-0 w-full min-w-0 mb-6 sm:w-1/2 lg:w-1/3"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.2 }}
+              >
+                <div className="flex flex-col items-center p-6 sm:p-8 min-h-[350px] bg-white shadow-md rounded-3xl transition hover:shadow-xl hover:scale-105 duration-500">
+                  <div className="relative w-20 h-20 mb-4">
+                    <Image
+                      src={t.image}
+                      alt={t.name}
+                      fill
+                      className="object-cover border-4 rounded-full shadow-md border-secondary"
+                    />
+                  </div>
+                  <p className="max-w-xs mb-4 text-sm italic sm:text-base md:text-lg text-text-muted">
+                    “{t.review}”
+                  </p>
+                  <div className="flex justify-center mb-3 text-xl text-accent">
+                    {"★".repeat(t.rating)}
+                    {"☆".repeat(5 - t.rating)}
+                  </div>
+                  <span className="font-semibold text-primary">{t.name}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="px-4 py-20 bg-white sm:px-6 md:px-20">
+        <motion.div
+          className="max-w-3xl mx-auto"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          <motion.h2
+            className="mb-12 text-2xl font-bold text-center sm:text-3xl md:text-3xl text-primary"
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+            }}
+          >
+            Frequently Asked Questions
+          </motion.h2>
+
+          <HomeFAQPreview />
+
+          <div className="mt-10 text-center">
+            <Link
+              href="/faq"
+              className="inline-block w-full px-8 py-4 font-semibold text-white transition rounded-full shadow-lg bg-secondary hover:bg-secondary/90 hover:scale-105 sm:w-auto"
+            >
+              View All FAQs
+            </Link>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Contact Agent Section */}
+      <section className="relative px-4 py-20 text-white bg-black sm:px-6 md:px-20">
+        <motion.div
+          className="max-w-2xl p-8 mx-auto border shadow-xl bg-black/60 backdrop-blur-lg rounded-3xl border-white/10"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUp}
+          transition={{ duration: 0.6 }}
         >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          <h2 className="mb-6 text-2xl font-bold text-center sm:text-3xl">
+            Contact an Agent
+          </h2>
+          <form className="space-y-6">
+            <input
+              type="text"
+              placeholder="Your Name"
+              className="w-full px-4 py-3 text-white border rounded-lg bg-black/40 border-white/20 placeholder:text-neutral-400 focus:ring-2 focus:ring-secondary focus:outline-none"
+            />
+            <input
+              type="email"
+              placeholder="Your Email"
+              className="w-full px-4 py-3 text-white border rounded-lg bg-black/40 border-white/20 placeholder:text-neutral-400 focus:ring-2 focus:ring-secondary focus:outline-none"
+            />
+            <textarea
+              rows="4"
+              placeholder="Your Message"
+              className="w-full px-4 py-3 text-white border rounded-lg bg-black/40 border-white/20 placeholder:text-neutral-400 focus:ring-2 focus:ring-secondary focus:outline-none"
+            ></textarea>
+            <button
+              type="submit"
+              className="w-full py-3 font-semibold text-white rounded-lg bg-secondary hover:bg-secondary/90"
+            >
+              Send Inquiry
+            </button>
+          </form>
+        </motion.div>
+      </section>
+    </main>
   );
 }
